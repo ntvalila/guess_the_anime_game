@@ -1,160 +1,84 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Game Name: Guess the Anime!
+# Developed by NTValila for IS215
 
-# C extensions
-*.so
+import random
+import os
+import openai
+openai.organization = "ORG"
+openai.api_key = "OPEN_API_KEY"
+openai.Model.list()
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Start of game proper #
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+print("Guess the Anime!")
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+categories = ['shonen', 'seinen', 'shoujo', 'mecha anime',
+         'josei', 'harem', 'isekai', 'iyashikei',
+         'sci-fi anime', 'fantasy anime', 'magical girl anime', 'detective anime']
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+category = random.choice(categories)
 
-# Translations
-*.mo
-*.pot
+print("The anime category is:" + category)
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+messages = {"role": "system", "content": "You are a kind and helpful assistant"}
 
-# Flask stuff:
-instance/
-.webassets-cache
+word=[{"role":"system", "content": "Give one title of anime in the genre" + str(category) + "Do not include parenthesis and explanations"}]
 
-# Scrapy stuff:
-.scrapy
+game = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=word
+)
 
-# Sphinx documentation
-docs/_build/
+correctword = game.choices[0].message.content
 
-# PyBuilder
-.pybuilder/
-target/
+fact=[{"role":"user", "content": "Give bulleted fifteen clues about the anime " + str(correctword) + "Replace all " +str(correctword) + "with the word 'it'. End each sentence with a period."}]
 
-# Jupyter Notebook
-.ipynb_checkpoints
+gameclue = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=fact
+)
 
-# IPython
-profile_default/
-ipython_config.py
+clue = gameclue.choices[0].message.content
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+clue_to_array = clue.split(".")
+clue_to_array = clue_to_array[ : -1]
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
+turns = 9
+guess = input("Player: ")
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+while turns > 0:
+    failed = 0
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+    if guess.lower() == correctword.lower():
+        print("You are right!")
+        print("The title of the anime is:")
+        print(correctword)
+        print("Thank you for playing.")
 
-# SageMath parsed files
-*.sage.py
+        play_again = input("Do you want to restart? [y/n]: ")
+        if play_again == "y":
+            exec(open("./main.py").read())
+        else:
+            exit()
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+    elif guess.lower() != correctword.lower():
+        print("Try again.")
+        turns -= 1
+        print("You have", + turns, 'more turns')
 
-# Spyder project settings
-.spyderproject
-.spyproject
+        print(random.choices(population=clue_to_array, k=1))
+        guess = input("Guess the anime:")
 
-# Rope project settings
-.ropeproject
+        if turns < 1:
+            print("You lose!")
+            print("The correct answer is " + correctword)
 
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+            play_again = input("Do you want to restart? [y/n]: ")
+            if play_again == "y":
+                exec(open("./main.py").read())
+            else:
+                exit()
+                
+                
